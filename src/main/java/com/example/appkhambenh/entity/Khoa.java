@@ -19,4 +19,7 @@ public class Khoa
     private String tenKhoa;
     @Column(name = "moTa", columnDefinition = "TEXT")
     private String moTa;
+    @Column(name = "hinhAnh")
+    private String hinhAnh;
+
 }

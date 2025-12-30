@@ -8,5 +8,6 @@ public class BacSiDTO {
     private Integer khoaId;
     private String bangCap;
     private Integer kinhNghiem;
-    private Integer soBenhNhanNgay;
+    private Double giaKham;
+    private Integer phongId;
 }

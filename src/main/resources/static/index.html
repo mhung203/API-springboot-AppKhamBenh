@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Chat WebSocket</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+<h2>Test Chat Realtime</h2>
+
+<div>
+    <label>Đăng nhập với ID:</label>
+    <input type="text" id="myId" placeholder="Nhập ID của bạn (VD: 1)">
+    <button onclick="connect()">Kết nối</button>
+</div>
+<hr/>
+<div id="chatArea" style="display:none;">
+    <h3>Đang online với ID: <span id="displayId"></span></h3>
+
+    <label>Gửi tới ID:</label>
+    <input type="text" id="recipientId" placeholder="ID người nhận (VD: 2)"> <br/><br/>
+
+    <label>Nội dung:</label>
+    <input type="text" id="message" placeholder="Hello...">
+    <button onclick="sendMessage()">Gửi tin nhắn</button>
+
+    <h3>Hộp thư đến:</h3>
+    <ul id="messagesList"></ul>
+</div>
+
+<script>
+    var stompClient = null;
+    var myId = null;
+
+    function connect() {
+        myId = document.getElementById("myId").value;
+        if(!myId) { alert("Chưa nhập ID!"); return; }
+
+        // 1. Kết nối tới endpoint '/ws' mà bạn đã cấu hình trong WebSocketConfig
+        var socket = new SockJS('http://localhost:8081/ws');
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+            document.getElementById("chatArea").style.display = "block";
+            document.getElementById("displayId").innerText = myId;
+
+            // 2. ĐĂNG KÝ (SUBSCRIBE) ĐỂ NHẬN TIN
+            // Đúng theo cấu hình: /user/{id}/queue/messages
+            stompClient.subscribe('/user/' + myId + '/queue/messages', function (chatMessage) {
+                showGreeting(JSON.parse(chatMessage.body));
+            });
+        });
+    }
+
+    function sendMessage() {
+        var recipientId = document.getElementById("recipientId").value;
+        var content = document.getElementById("message").value;
+
+        // 3. GỬI TIN (PUBLISH)
+        // Gửi tới @MessageMapping("/chat") -> đường dẫn thực là /app/chat
+        stompClient.send("/app/chat", {}, JSON.stringify({
+            'senderId': myId,
+            'recipientId': recipientId,
+            'content': content
+        }));
+    }
+
+    function showGreeting(message) {
+        var ul = document.getElementById("messagesList");
+        var li = document.createElement("li");
+        li.appendChild(document.createTextNode("Người gửi " + message.nguoiGuiId + ": " + message.noiDung));
+        ul.appendChild(li);
+    }
+</script>
+</body>
+</html>

@@ -1,4 +1,5 @@
 package com.example.appkhambenh.entity;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 @Entity
@@ -19,4 +20,12 @@ public class BacSi {
     @ManyToOne
     @JoinColumn(name="khoaId")
     private Khoa khoa;
+    @Column(name = "anhDaiDien")
+    private String anhDaiDien;
+    @Column(name = "gia_kham")
+    private Double giaKham;
+    @ManyToOne
+    @JoinColumn(name = "phong_id")
+    @JsonIgnoreProperties({"danhSachBacSi", "hibernateLazyInitializer", "handler"})
+    private PhongKham phongKham;
 }

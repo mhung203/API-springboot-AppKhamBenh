@@ -19,9 +19,20 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+
+                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
+
                 .authorizeHttpRequests(auth -> auth
+
+                        .requestMatchers("/ws/**").permitAll()
+
+                        .requestMatchers("/api/auth/**", "/api/login", "/api/register").permitAll()
+
+                        .requestMatchers("/index.html", "/js/**", "/css/**").permitAll()
+
                         .anyRequest().permitAll()
                 );
+
         return http.build();
     }
 }

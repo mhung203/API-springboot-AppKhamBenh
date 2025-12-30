@@ -1,5 +1,7 @@
 package com.example.appkhambenh.controller;
-
+import com.example.appkhambenh.service.CloudinaryService;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
 import com.example.appkhambenh.entity.Khoa;
 import com.example.appkhambenh.repository.KhoaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,8 @@ public class KhoaController {
 
     @Autowired
     private KhoaRepository khoaRepository;
+    @Autowired
+    private CloudinaryService cloudinaryService;
 
     @GetMapping("/search")
     public List<Khoa> searchKhoa(@RequestParam String name) {
@@ -46,10 +50,32 @@ public class KhoaController {
     }
     @PostMapping
     public Khoa createKhoa(@RequestBody Khoa khoa) {
+
         return khoaRepository.save(khoa);
     }
     @GetMapping
     public List<Khoa> getAllKhoa() {
         return khoaRepository.findAll();
     }
+    @PostMapping(value = "/{id}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadHinhKhoa(@PathVariable Integer id, @RequestParam("file") MultipartFile file) {
+        try {
+
+            Khoa khoa = khoaRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy Khoa có ID: " + id));
+
+
+            String url = cloudinaryService.uploadImage(file);
+
+
+            khoa.setHinhAnh(url);
+            khoaRepository.save(khoa);
+
+
+            return ResponseEntity.ok(url);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Lỗi upload ảnh: " + e.getMessage());
+        }
+    }
+
 }
